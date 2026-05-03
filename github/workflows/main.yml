@@ -1,4 +1,3 @@
-
 name: Build Carbanak APK
 on:
   push:
@@ -42,9 +41,9 @@ jobs:
             libtool \
             pkg-config \
             zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev \
-            libtinfo5 \
+            libncurses6-dev \
+            libncursesw6-dev \
+            libtinfo6 \
             cmake \
             libffi-dev \
             libssl-dev \
@@ -59,10 +58,10 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Aceita as licenças do Android SDK automaticamente
+          # Aceita as licenças do Android SDK automaticamente e inicia o build
           yes | buildozer android debug
         env:
-          # Garante que o build não pare pedindo interação do usuário
+          # Evita que o build pare por causa do domínio de teste ou permissões de root
           BUILDOZER_ALLOW_ORG_TEST_DOMAIN: 1
           BUILDOZER_WARN_ON_ROOT: 1
 
