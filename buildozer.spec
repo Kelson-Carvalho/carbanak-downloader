@@ -7,7 +7,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 
 # Requirements simplificados para o build não ser cancelado por lentidão
-requirements = python3,kivy==2.3.0,kivymd==1.2.0,yt-dlp,certifi,pillow,requests
+requirements = python3,kivy,kivymd,yt-dlp
 
 orientation = portrait
 android.permissions = INTERNET, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
