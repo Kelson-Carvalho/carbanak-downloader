@@ -30,16 +30,9 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Comando para aceitar licenças antes de começar o build pesado
-          yes | buildozer android debug --observe
+          # Comando otimizado: limpa o ambiente e compila de forma mais direta
+          buildozer init
+          yes | buildozer android debug
         env:
           BUILDOZER_ALLOW_ORG_TEST_DOMAIN: 1
           BUILDOZER_WARN_ON_ROOT: 1
-          # Variável extra para forçar aceitação em alguns ambientes
-          ANDROID_SDK_HOME: /home/runner/.buildozer/android/platform/android-sdk
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Carbanak-App-Debug
-          path: bin/*.apk
