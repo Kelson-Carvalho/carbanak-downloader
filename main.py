@@ -1,4 +1,3 @@
-
 import threading
 import yt_dlp
 import os
@@ -13,13 +12,8 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.utils import platform
 
-# Configuração de Certificados SSL para evitar erros de rede no Android
+# Configuração SSL para Android
 os.environ['SSL_CERT_FILE'] = certifi.where()
-
-# Permissões para Android 
-if platform == 'android':
-    from android.permissions import request_permissions, Permission
-    request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
 
 KV = '''
 MDScreen:
@@ -79,21 +73,22 @@ class CarbanakApp(MDApp):
     def build(self):
         self.theme_cls.primary_palette = "Blue"
         self.current_video_url = None
+        if platform == 'android':
+            self.request_android_permissions()
         return Builder.load_string(KV)
+
+    def request_android_permissions(self):
+        from android.permissions import request_permissions, Permission
+        request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
 
     def iniciar_busca(self, query):
         if not query: return
         self.root.ids.result_card.opacity = 1
-        self.root.ids.status_log.text = "Buscando no YouTube..."
+        self.root.ids.status_log.text = "Buscando..."
         threading.Thread(target=self.processar_busca, args=(query,), daemon=True).start()
 
     def processar_busca(self, query):
-        ydl_opts = {
-            'quiet': True, 
-            'no_warnings': True, 
-            'nocheckcertificate': True,
-            'extract_flat': False,
-        }
+        ydl_opts = {'quiet': True, 'no_warnings': True, 'nocheckcertificate': True}
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(f"ytsearch1:{query}", download=False)['entries'][0]
@@ -102,52 +97,40 @@ class CarbanakApp(MDApp):
                 thumb = info.get('thumbnail')
                 Clock.schedule_once(lambda dt: self.atualizar_ui(titulo, thumb))
         except Exception as e:
-            Clock.schedule_once(lambda dt: self.mostrar_mensagem(f"Erro na busca: {str(e)[:30]}"))
+            Clock.schedule_once(lambda dt: self.mostrar_mensagem(f"Erro: {str(e)[:30]}"))
 
     def atualizar_ui(self, titulo, thumb):
-        self.root.ids.video_title.text = titulo[:50] + "..." if len(titulo) > 50 else titulo
+        self.root.ids.video_title.text = titulo[:50]
         self.root.ids.video_thumbnail.source = thumb
-        self.root.ids.status_log.text = "Vídeo encontrado!"
+        self.root.ids.status_log.text = "Pronto!"
 
     def mostrar_mensagem(self, texto):
         self.root.ids.status_log.text = texto
 
     def iniciar_download(self, tipo):
-        if not self.current_video_url:
-            self.mostrar_mensagem("Busque um vídeo primeiro!")
-            return
-        self.mostrar_mensagem(f"Preparando download do {tipo}...")
+        if not self.current_video_url: return
+        self.mostrar_mensagem("Baixando...")
         threading.Thread(target=self.executar_download, args=(tipo,), daemon=True).start()
 
     def executar_download(self, tipo):
-        # Define pasta de downloads de forma compatível com Android e PC
         if platform == 'android':
             from android.storage import primary_external_storage_path
-            base_path = primary_external_storage_path()
-            folder = os.path.join(base_path, 'Download')
+            folder = os.path.join(primary_external_storage_path(), 'Download')
         else:
             folder = os.path.join(os.path.expanduser('~'), 'Downloads')
 
-        if not os.path.exists(folder):
-            os.makedirs(folder, exist_ok=True)
-        
+        os.makedirs(folder, exist_ok=True)
         output = os.path.join(folder, '%(title)s.%(ext)s')
-
         ydl_opts = {
-            'outtmpl': output,
-            'quiet': True,
-            'no_warnings': True,
-            'nocheckcertificate': True,
-            'logger': None, 
-            'format': 'bestaudio[ext=m4a]/best[ext=mp4]/best' if tipo == "m4a" else 'best[ext=mp4]/best'
+            'outtmpl': output, 'quiet': True, 'no_warnings': True,
+            'format': 'bestaudio[ext=m4a]/best' if tipo == "m4a" else 'best'
         }
-
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([self.current_video_url])
-            Clock.schedule_once(lambda dt: self.mostrar_mensagem(f"SUCESSO! Salvo em: {folder}"))
+            Clock.schedule_once(lambda dt: self.mostrar_mensagem("SUCESSO!"))
         except Exception as e:
-            Clock.schedule_once(lambda dt: self.mostrar_mensagem(f"Erro no download: {str(e)[:40]}"))
+            Clock.schedule_once(lambda dt: self.mostrar_mensagem("Erro no download"))
 
 if __name__ == "__main__":
     CarbanakApp().run()
