@@ -6,7 +6,7 @@ version = 1.0
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 
-# Requirements otimizados para evitar erro de Broken Pipe e excesso de memória
+# Requirements simplificados para o build não ser cancelado por lentidão
 requirements = python3,kivy==2.3.0,kivymd==1.2.0,yt-dlp,certifi,pillow,requests
 
 orientation = portrait
