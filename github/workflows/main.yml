@@ -41,16 +41,21 @@ jobs:
             libtool \
             pkg-config \
             zlib1g-dev \
-            libncurses6-dev \
-            libncursesw6-dev \
-            libtinfo6 \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libtinfo5 \
             cmake \
             libffi-dev \
             libssl-dev \
             automake \
             build-essential \
-            openjdk-17-jdk
-
+            openjdk-17-jdk || \
+          sudo apt install -y \
+            libncurses-dev \
+            libtinfo-dev \
+            libffi-dev \
+            libssl-dev
+            
       - name: Install Buildozer and Cython
         run: |
           pip install --upgrade pip
@@ -58,10 +63,8 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Aceita as licenças do Android SDK automaticamente e inicia o build
           yes | buildozer android debug
         env:
-          # Evita que o build pare por causa do domínio de teste ou permissões de root
           BUILDOZER_ALLOW_ORG_TEST_DOMAIN: 1
           BUILDOZER_WARN_ON_ROOT: 1
 
