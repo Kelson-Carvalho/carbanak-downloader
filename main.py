@@ -12,7 +12,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.utils import platform
 
-# Configuração SSL para Android
+# Configuração SSL para evitar erros de conexão no Android
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
 KV = '''
